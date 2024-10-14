@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea54fddc-ef97-451d-99c8-7b3c9f969bd6" name="Changes" comment="14/10/2024 - Comienzo&#10;- Comprobaciones de fechas gregorianas&#10;- Hay que corregir las comprobaciones de años bisiestos" />
+    <list default="true" id="ea54fddc-ef97-451d-99c8-7b3c9f969bd6" name="Changes" comment="14/10/2024 - Comienzo&#10;- Comprobaciones de fechas gregorianas&#10;- Hay que corregir las comprobaciones de años bisiestos">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/MainWindow.form" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/MainWindow.form" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/MainWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/MainWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/MainWindow$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/MainWindow$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/MainWindow$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/MainWindow$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/MainWindow$3.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/MainWindow$3.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/MainWindow.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/MainWindow.class" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -42,7 +50,7 @@
     "UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH": "270",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/juanp/IdeaProjects/GregorToJul",
+    "last_opened_file_path": "C:/Users/juanp/IdeaProjects/GregorToJul/src/main/resources",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -52,6 +60,12 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\juanp\IdeaProjects\GregorToJul\src\main\resources" />
+      <recent name="C:\Users\juanp\IdeaProjects\GregorToJul\src\main\java\Resources" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -69,7 +83,8 @@
       <workItem from="1728577868017" duration="150000" />
       <workItem from="1728578033553" duration="104000" />
       <workItem from="1728894581386" duration="154000" />
-      <workItem from="1728894742754" duration="773000" />
+      <workItem from="1728894742754" duration="1284000" />
+      <workItem from="1728896245026" duration="12699000" />
     </task>
     <task id="LOCAL-00001" summary="10/10/2024 - Comienzo&#10;- Comprobaciones de fechas gregorianas&#10;- Hay que corregir las comprobaciones de años bisiestos">
       <option name="closed" value="true" />
