@@ -1,16 +1,13 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.HashMap;
 
 public class MainWindow extends JFrame {
 
     private int day, month, year;
     private HashMap<String, String> monthDict;
-    private int daysUntil;   // Días desde el 1 de enero hasta el día que se ha introducido
 
     public MainWindow()  {
         initComponents();
@@ -25,22 +22,23 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private boolean checkPatternDate(){
-
+    private boolean checkGregorianPatternDate(){
         if (!gregorianDateTF.getText().isEmpty()) {  // Si hay introducida una fecha en gregoriano....
-            String gregorianInput = gregorianDateTF.getText().trim(); // Obtenemos el texto y eliminamos los posibles espacios
+            // Obtenemos el texto y eliminamos los posibles espacios
+            String gregorianInput = gregorianDateTF.getText().trim();
 
             String patternGregorian = "^\\d{2}/\\d{2}/\\d{4}$"; // dd/MM/yyyy
 
-            if (!gregorianInput.matches(patternGregorian)) {
+            if (!gregorianInput.matches(patternGregorian)) {    // Si no coincide la fecha con el patrón de arriba...
                 JOptionPane.showMessageDialog(this, "Formato de fecha incorrecto. Usa el formato dd/MM/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
 
-            String[] parts = gregorianInput.split("/"); // Array de Strings (dd, mm, yyyy) para separar los numeros por la '/'
-            day = Integer.parseInt(parts[0]);
-            month = Integer.parseInt(parts[1]);
-            year = Integer.parseInt(parts[2]);
+            // Array de Strings (dd, mm, yyyy) para separar los numeros por la '/'
+            String[] parts = gregorianInput.split("/");
+            day = Integer.parseInt(parts[0]); // Guardamos en 'day' el valor de 'dd' en la fecha introducida
+            month = Integer.parseInt(parts[1]); // Guardamos en 'month' el valor de 'MM' en la fecha introducida
+            year = Integer.parseInt(parts[2]); // Guardamos en 'year' el valor de 'yyyy' en la fecha introducida
 
             // Creamos un diccionario para asociar el mes introducido con su nombre para poder gestionar las incidencias
             monthDict = new HashMap<String, String>() {{
@@ -76,7 +74,7 @@ public class MainWindow extends JFrame {
                     if (day > 31) {
                         // Mostramos un mensaje "personalizado" en función del mes que hemos introducido (obtenemos el valor)
                         JOptionPane.showMessageDialog(this, monthDict.get(String.valueOf(month)) + " solo tiene 31 días.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                        return false; // NUEVO
+                        return false;
                     }
                     break;
                 case 4:
@@ -85,19 +83,19 @@ public class MainWindow extends JFrame {
                 case 11:
                     if (day > 30) {
                         JOptionPane.showMessageDialog(this, monthDict.get(String.valueOf(month)) + " solo tiene 30 días.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                        return false; // NUEVO
+                        return false;
                     }
                     break;
                 case 2:
                     if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) { // Si year es bisiesto...
                         if (day > 29) {
                             JOptionPane.showMessageDialog(this, "Febrero solo tiene 29 días.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                            return false; // NUEVO
+                            return false;
                         }
                     } else { // Si year no es bisiesto...
                         if (day > 28) {
                             JOptionPane.showMessageDialog(this, "Febrero solo tiene 28 días.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                            return false; // NUEVO
+                            return false;
                         }
                     }
                     break;
@@ -107,34 +105,50 @@ public class MainWindow extends JFrame {
         return false;
     }
 
-    private void convertDate(){
-        if(checkPatternDate()){
-            daysUntil = 0; // Reiniciamos los días para que no se acumulen
+    private void convertGregorianDate(){
+        if(checkGregorianPatternDate()){
+            int julianDate = 0; // Fecha final en juliano
+            int julianMonth = 0; // Variable para almacenar los meses en juliano (marzo es comienzo de anio)
 
             if(!gregorianDateTF.getText().isEmpty()){
-                // Array de int con los días máx de cada mes (ponemos el 0 para igualar los meses a las posiciones del array)
-                int [] monthDays = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-                // Si el año es bisiesto se le añade un día mas a febrero
-                if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) {
-                    monthDays[2] = 29;
+                ////🛠️🛠️🛠️ PRUEBAS
+                // En el calendario GREGORIANO, en 1582 se pasó del 4 de octubre al 15 (no exiten del 5 al 14)
+                if(year == 1582 && month == 10 && day > 4 && day < 15){
+                    JOptionPane.showMessageDialog(this, "Esa fecha no existe en el calendario gregoriano", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
 
-                // Recorremos los meses hata el que se ha introducido en la interfaz (Empezamos con enero)
-                for(int i = 1; i < month; i++){
-                    daysUntil += monthDays[i]; // Sumamos los días de los meses que hemos pasado hasta el mes introducido
+                // En el calendario juliano el anio empieza en marzo, (enero y febrero serían del año anterior)
+                if(month > 2){
+                    julianMonth = month + 1;
+                } else {
+                    // Como el mes es menor que 2 (enero y febrero) son del anio pasado (en calendario juliano) restamos 1 año
+                    year--;
+                    // Para convertir enero y febrero a juliano sumamos 13 al mes introducido (enero es el 13 y febrero el 14)
+                    julianMonth = month + 13;
                 }
-                daysUntil += day; // A los días que han pasado les sumamos los días que hemos introducido del mes
 
-                // Formula más precisa para convertir fechas (teniendo en cuenta los multiplos de 100 que no son bisiestos y los multiplos de 400)
-                String conversionJul = String.valueOf(day + ((153 * month + 2) / 5) + (365 * year) + (year / 4) - (year / 100) + (year / 400) - 32045);
-                julianDateTF.setText(conversionJul);
+                /* Calculamos el número de días correspondientes a los anios que han pasado hasta la fecha introducida
+                * Primero hacemos una aproximacion de dias en anios tendiendo en cuenta los bisiestos (de ahi el 0.25)
+                * Sumamos una aproximacion de dias en los meses (30.6001 es una constante para pasar meses a días)
+                * Por último sumamos el dia introducido a los dias desde la fecha de inicio del calendario juliano
+                * hasta su inicio en 1582 */
+                int pastDays = (int) (Math.floor(365.25 * year) + Math.floor(30.6001 * julianMonth) + day + 1720996);
 
+                // Si la fecha introducida es posterior a cuando se introdujo el calendario gregoriano...
+                if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) { // El 15 de ocutbre de 1582 es el comienzo del calendario gregoriano
+                    int numSiglos = year / 100; // Calculamos cuantos siglos han pasado desde el anio 0
+                    // Corregimos los dias para tener en cuenta las diferencias entre los 2 calendarios
+                    // Al numSiglos le restamos los anios bisiestos (En el calendario juliano cada 4 años es bisiesto si o si)
+                    pastDays -= numSiglos - (numSiglos / 4);
+                }
+
+                // Como el calendario juliano cuenta los días que han pasado redondeamos los días hacia el entero más cercano
+                julianDate = (int) Math.floor(pastDays);
+
+                // Establecemos la fecha juliana en el TextField
+                julianDateTF.setText(String.valueOf(julianDate));
             }
-            // Convertir de juliano a gregoriano. Falta por poner
-
-
-
         } else {
             JOptionPane.showMessageDialog(this, "Verifique la fecha.", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -156,22 +170,32 @@ public class MainWindow extends JFrame {
                     return;
                 }
 
-                boolean patternOk;
-                patternOk = checkPatternDate();
+                // Variables para comprobar si las fechas introcidas están en un formato correcto
+                boolean gregPatternOk;
+                boolean julianPatternOk;
 
-                 if (patternOk){   // Si se ha introducido una fecha correctamente...
-                    gregorianDateTF.setForeground(Color.BLACK);
-                    convertDate();
+                if(!gregorianDateTF.getText().isEmpty() && julianDateTF.getText().isEmpty()){
+                    gregPatternOk = checkGregorianPatternDate();
 
-                } else { // Si el formato de fecha es incorrecto...
-                    JOptionPane.showMessageDialog(mainPanel, "Introduzca una fecha correctamente", "Error", JOptionPane.ERROR_MESSAGE);
-                    gregorianDateTF.setForeground(Color.RED);
+                    if (gregPatternOk){   // Si se ha introducido una fecha correctamente...
+                        gregorianDateTF.setForeground(Color.BLACK);
+                        convertGregorianDate();
+
+                    } else { // Si el formato de fecha es incorrecto...
+                        JOptionPane.showMessageDialog(mainPanel, "Introduzca una fecha correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+                        gregorianDateTF.setForeground(Color.RED);
+                    }
+                } else if(gregorianDateTF.getText().isEmpty() && !julianDateTF.getText().isEmpty()){
+                    // COMPROBAMOS PATRON DE JULIANO Y LLAMAMOS A METODO PARA CONVERTIR
+                    // gregPatternOk = checkJulianPatternDate(); CREAR METODO
                 }
+
+
             }
         });
 
 
-        deleteButton.addActionListener(new ActionListener() {
+        clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 gregorianDateTF.setText("");
@@ -183,11 +207,11 @@ public class MainWindow extends JFrame {
 
     private JPanel mainPanel;
     private JLabel Title;
-    private JTextField gregorianDateTF;
     private JTextField julianDateTF;
     private JButton convertButton;
     private JLabel gregorianLabel;
     private JLabel julianLabel;
     private JLabel exGregLabel;
-    private JButton deleteButton;
+    private JButton clearButton;
+    private JTextField gregorianDateTF;
 }
