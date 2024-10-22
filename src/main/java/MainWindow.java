@@ -2,7 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class MainWindow extends JFrame {
 
@@ -27,9 +31,9 @@ public class MainWindow extends JFrame {
             // Obtenemos el texto y eliminamos los posibles espacios
             String gregorianInput = gregorianDateTF.getText().trim();
 
-            String patternGregorian = "^\\d{2}/\\d{2}/\\d{4}$"; // dd/MM/yyyy
+            String gregorianPattern = "^\\d{2}/\\d{2}/\\d{4}$"; // dd/MM/yyyy
 
-            if (!gregorianInput.matches(patternGregorian)) {    // Si no coincide la fecha con el patrón de arriba...
+            if (!gregorianInput.matches(gregorianPattern)) {    // Si no coincide la fecha con el patrón de arriba...
                 JOptionPane.showMessageDialog(this, "Formato de fecha incorrecto. Usa el formato dd/MM/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
@@ -105,6 +109,49 @@ public class MainWindow extends JFrame {
         return false;
     }
 
+    private boolean checkJulianPatternDate() {
+        // Guardamos la fecha juliana introducida como String para poder compararla y quitamos los espacios
+        String julianInput = julianDateTF.getText().trim();
+
+        String julianPattern = "^\\d{7}$"; // 1234567
+
+        if (!julianInput.matches(julianPattern)) {    // Si no coincide la fecha con el patrón de arriba...
+            JOptionPane.showMessageDialog(this, "Formato de fecha incorrecto. La fecha juliana tiene 7 digitos.", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
+    private void convertJulianDate(){
+        // Guardamos la fecha introducida en juliano como número entero
+        int julianDate = Integer.parseInt(julianDateTF.getText().trim());
+        int j5;
+
+        // Ajuste para compensar la diferencia entre el calendario gregoriano y el juliano
+        int adjustVar = julianDate + 32044;
+        // Variable para representar los siglos que han pasado  (Multiplicamos por 4 para calcular los siglos y dividimos por los dias que hay en 400 años)
+        int centuries = (int) Math.floor((4 * adjustVar + 3) / 146097);
+        // Restanmos el numero de dias de los siglos completos
+        adjustVar -= (int) Math.floor((146097 * centuries) / 4);
+        // Guardamos el numero de anios dentro de cada ciclo de 4 anios
+        int centuryYears = (int) Math.floor((4 * adjustVar + 3) / 1461);
+        // Restamos los dias que ya se han cubierto en el ciclo de 4 anios
+        adjustVar -= (int) Math.floor((1461 * centuryYears) / 4);
+        // Calculamos el mes multiplicando por 5 y dividiendo por 153 (para dividir el anio en segmentos de 91 dias aprox)
+        int monthsYear = (int) Math.floor((5 * adjustVar + 2) / 153);
+
+        // Calculamos el dia del mes restando los siglos, anios y meses y sumamos 2 (para que muestre el dia exacto)
+        int day = adjustVar - (int) Math.floor((153 * monthsYear + 2) / 5) + 2;
+        // Caulculamos el mes (+3 para corregir los meses) (-12* para la diferencia de los ultimos meses del año oct, nov, dic)
+        int month = monthsYear + 3 - 12 * (int) Math.floor(monthsYear / 10);
+        // Calculamos el anio sumando siglos completos, anios dentro de ciclos y restando la base para la diferencia entre calendarios
+        int year = 100 * centuries + centuryYears - 4800 + (int) Math.floor(monthsYear / 10);
+
+        // Establecemos la fecha en el TextField
+        gregorianDateTF.setText(day + "/" + month + "/" + year);
+    }
+
+
     private void convertGregorianDate(){
         if(checkGregorianPatternDate()){
             int julianDate = 0; // Fecha final en juliano
@@ -128,12 +175,14 @@ public class MainWindow extends JFrame {
                     julianMonth = month + 13;
                 }
 
-                /* Calculamos el número de días correspondientes a los anios que han pasado hasta la fecha introducida
-                * Primero hacemos una aproximacion de dias en anios tendiendo en cuenta los bisiestos (de ahi el 0.25)
-                * Sumamos una aproximacion de dias en los meses (30.6001 es una constante para pasar meses a días)
-                * Por último sumamos el dia introducido a los dias desde la fecha de inicio del calendario juliano
-                * hasta su inicio en 1582 */
-                int pastDays = (int) (Math.floor(365.25 * year) + Math.floor(30.6001 * julianMonth) + day + 1720996);
+                // Calculamos el número de días correspondientes a los anios que han pasado hasta la fecha introducida
+                // Primero hacemos una aproximacion de dias en anios tendiendo en cuenta los bisiestos (de ahi el 0.25)
+                int yearDays = (int) Math.floor(365.25 * year);
+                // Sumamos una aproximacion de dias en los meses (30.6001 es una constante para pasar meses a días)
+                int monthDays = (int) Math.floor(30.6001 * julianMonth);
+                // Constante de ajuste para convertir fechas de gregoriano a juliano
+                int julianAdjustment = 1720996;
+                int pastDays = yearDays + monthDays + day + julianAdjustment;
 
                 // Si la fecha introducida es posterior a cuando se introdujo el calendario gregoriano...
                 if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) { // El 15 de ocutbre de 1582 es el comienzo del calendario gregoriano
@@ -144,7 +193,7 @@ public class MainWindow extends JFrame {
                 }
 
                 // Como el calendario juliano cuenta los días que han pasado redondeamos los días hacia el entero más cercano
-                julianDate = (int) Math.floor(pastDays);
+                julianDate = pastDays;
 
                 // Establecemos la fecha juliana en el TextField
                 julianDateTF.setText(String.valueOf(julianDate));
@@ -186,15 +235,23 @@ public class MainWindow extends JFrame {
                         gregorianDateTF.setForeground(Color.RED);
                     }
                 } else if(gregorianDateTF.getText().isEmpty() && !julianDateTF.getText().isEmpty()){
-                    // COMPROBAMOS PATRON DE JULIANO Y LLAMAMOS A METODO PARA CONVERTIR
-                    // gregPatternOk = checkJulianPatternDate(); CREAR METODO
+                    // Comprobamos si se ha introducido una fecha en juliano correctamente
+                    julianPatternOk = checkJulianPatternDate();
+
+                    if(julianPatternOk){ // Si se ha introducido una fecha correctamente...
+                        julianDateTF.setForeground(Color.BLACK);
+                        convertJulianDate();
+                    } else { // Si la fecha no es correcta...
+                        JOptionPane.showMessageDialog(mainPanel, "Introduzca una fecha correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+                        gregorianDateTF.setForeground(Color.RED);
+                    }
                 }
 
 
             }
         });
 
-
+        // Action listener to clear the text of both TextFields
         clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

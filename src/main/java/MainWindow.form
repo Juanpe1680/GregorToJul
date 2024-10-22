@@ -208,7 +208,7 @@
           <forms defaultalign-horz="false" defaultalign-vert="false"/>
         </constraints>
         <properties>
-          <focusable value="false"/>
+          <focusable value="true"/>
           <font size="18"/>
         </properties>
       </component>
